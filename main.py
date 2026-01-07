@@ -1,4 +1,5 @@
 import hashlib
+from passlib.hash import bcrypt
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
@@ -16,7 +17,6 @@ SECRET_KEY = "resume_secret_key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # -----------------------
@@ -71,12 +71,13 @@ class Resume(BaseModel):
 # -----------------------
 def hash_password(password: str):
     sha = hashlib.sha256(password.encode("utf-8")).hexdigest()
-    return pwd_context.hash(sha)
+    return bcrypt.using(rounds=12).hash(sha)
 
 
 def verify_password(plain, hashed):
     sha = hashlib.sha256(plain.encode("utf-8")).hexdigest()
-    return pwd_context.verify(sha, hashed)
+    return bcrypt.verify(sha, hashed)
+
 
 
 
