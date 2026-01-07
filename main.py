@@ -50,3 +50,15 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "OK"}
+
+@app.post("/resumes")
+def add_resume(resume: Resume):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO resumes (name, email, skills, experience) VALUES (?, ?, ?, ?)",
+        (resume.name, resume.email, resume.skills, resume.experience)
+    )
+    conn.commit()
+    conn.close()
+    return {"message": "Resume added successfully"}
