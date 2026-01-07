@@ -84,4 +84,14 @@ def update_resume(resume_id: int, resume: Resume):
     conn.close()
     return {"message": "Resume updated successfully"}
 
+@app.delete("/resumes/{resume_id}")
+def delete_resume(resume_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM resumes WHERE id=?", (resume_id,))
+    conn.commit()
+    conn.close()
+    return {"message": "Resume deleted successfully"}
+
+
 
