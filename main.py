@@ -71,3 +71,17 @@ def get_resumes():
     conn.close()
     return [dict(row) for row in rows]
 
+@app.put("/resumes/{resume_id}")
+def update_resume(resume_id: int, resume: Resume):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE resumes
+        SET name=?, email=?, skills=?, experience=?
+        WHERE id=?
+    """, (resume.name, resume.email, resume.skills, resume.experience, resume_id))
+    conn.commit()
+    conn.close()
+    return {"message": "Resume updated successfully"}
+
+
