@@ -1,7 +1,48 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
+import sqlite3
 
 app = FastAPI(title="Resume Management API")
 
+# -----------------------
+# Database connection
+# -----------------------
+def get_db_connection():
+    conn = sqlite3.connect("resumes.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# -----------------------
+# Create table on startup
+# -----------------------
+@app.on_event("startup")
+def startup():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS resumes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            skills TEXT,
+            experience INTEGER
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+# -----------------------
+# Models
+# -----------------------
+class Resume(BaseModel):
+    name: str
+    email: str
+    skills: str
+    experience: int
+
+# -----------------------
+# Routes
+# -----------------------
 @app.get("/")
 def root():
     return {"message": "Resume Management API is live"}
