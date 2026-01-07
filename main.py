@@ -69,10 +69,15 @@ class Resume(BaseModel):
 # Utility functions
 # -----------------------
 def hash_password(password: str):
-    return pwd_context.hash(password)
+    # bcrypt supports max 72 bytes
+    safe_password = password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
+    return pwd_context.hash(safe_password)
+
 
 def verify_password(plain, hashed):
-    return pwd_context.verify(plain, hashed)
+    safe_plain = plain.encode("utf-8")[:72].decode("utf-8", errors="ignore")
+    return pwd_context.verify(safe_plain, hashed)
+
 
 def create_access_token(data: dict):
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
