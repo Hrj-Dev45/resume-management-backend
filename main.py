@@ -1,3 +1,4 @@
+import hashlib
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
@@ -69,14 +70,14 @@ class Resume(BaseModel):
 # Utility functions
 # -----------------------
 def hash_password(password: str):
-    # bcrypt supports max 72 bytes
-    safe_password = password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
-    return pwd_context.hash(safe_password)
+    sha = hashlib.sha256(password.encode("utf-8")).hexdigest()
+    return pwd_context.hash(sha)
 
 
 def verify_password(plain, hashed):
-    safe_plain = plain.encode("utf-8")[:72].decode("utf-8", errors="ignore")
-    return pwd_context.verify(safe_plain, hashed)
+    sha = hashlib.sha256(plain.encode("utf-8")).hexdigest()
+    return pwd_context.verify(sha, hashed)
+
 
 
 def create_access_token(data: dict):
