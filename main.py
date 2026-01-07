@@ -157,3 +157,39 @@ def get_resumes(user=Depends(get_current_user)):
     rows = conn.execute("SELECT * FROM resumes").fetchall()
     conn.close()
     return [dict(row) for row in rows]
+
+@app.post("/resumes/upload")
+def upload_resume(
+    name: str,
+    email: str,
+    skills: str,
+    experience: int,
+    file: UploadFile = File(...),
+    user=Depends(get_current_user)
+):
+    # Validate file type
+    if not file.filename.lower().endswith((".pdf", ".docx")):
+        raise HTTPException(status_code=400, detail="Only PDF or DOCX allowed")
+
+    file_location = f"{UPLOAD_DIR}/{file.filename}"
+
+    with open(file_location, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        INSERT INTO resumes (name, email, skills, experience, file_path)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (name, email, skills, experience, file_location)
+    )
+    conn.commit()
+    conn.close()
+
+    return {
+        "message": "Resume uploaded successfully",
+        "file": file.filename
+    }
+
