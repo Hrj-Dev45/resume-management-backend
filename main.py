@@ -9,6 +9,12 @@ from passlib.hash import argon2
 from jose import jwt, JWTError
 import sqlite3
 from datetime import datetime, timedelta
+import os
+import shutil
+
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 
 app = FastAPI(title="Resume Management API")
 
