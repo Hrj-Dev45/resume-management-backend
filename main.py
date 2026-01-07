@@ -62,3 +62,12 @@ def add_resume(resume: Resume):
     conn.commit()
     conn.close()
     return {"message": "Resume added successfully"}
+
+@app.get("/resumes")
+def get_resumes():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    rows = cursor.execute("SELECT * FROM resumes").fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
