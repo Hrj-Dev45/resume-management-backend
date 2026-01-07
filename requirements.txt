@@ -1,4 +1,5 @@
 fastapi
 uvicorn
-passlib[argon2]
 python-jose
+passlib[argon2]
+python-multipart
