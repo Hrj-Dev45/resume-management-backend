@@ -1,9 +1,8 @@
-import hashlib
-from passlib.hash import bcrypt
+
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
-from passlib.context import CryptContext
+from passlib.hash import argon2
 from jose import jwt, JWTError
 import sqlite3
 from datetime import datetime, timedelta
@@ -70,15 +69,11 @@ class Resume(BaseModel):
 # Utility functions
 # -----------------------
 def hash_password(password: str):
-    sha = hashlib.sha256(password.encode("utf-8")).hexdigest()
-    return bcrypt.using(rounds=12).hash(sha)
+    return argon2.hash(password)
 
 
 def verify_password(plain, hashed):
-    sha = hashlib.sha256(plain.encode("utf-8")).hexdigest()
-    return bcrypt.verify(sha, hashed)
-
-
+    return argon2.verify(plain, hashed)
 
 
 def create_access_token(data: dict):
