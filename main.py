@@ -45,7 +45,8 @@ def startup():
             name TEXT,
             email TEXT,
             skills TEXT,
-            experience INTEGER
+            experience INTEGER,
+            file_path TEXT
         )
     """)
 
