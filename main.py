@@ -199,3 +199,15 @@ def upload_resume(
         "file": file.filename
     }
 
+@app.get("/ui", response_class=HTMLResponse)
+def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/upload", response_class=HTMLResponse)
+def upload_page(request: Request):
+    return templates.TemplateResponse("upload.html", {"request": request})
+
+@app.get("/list", response_class=HTMLResponse)
+def list_page(request: Request):
+    return templates.TemplateResponse("list.html", {"request": request})
+
