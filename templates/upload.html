@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Resume</title>
+</head>
+<body>
+<h2>Upload Resume</h2>
+
+<form id="uploadForm">
+    <input name="name" placeholder="Name"><br><br>
+    <input name="email" placeholder="Email"><br><br>
+    <input name="skills" placeholder="Skills"><br><br>
+    <input name="experience" type="number" placeholder="Experience"><br><br>
+    <input name="file" type="file"><br><br>
+    <button type="submit">Upload</button>
+</form>
+
+<script>
+document.getElementById("uploadForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    const res = await fetch("/resumes/upload", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        },
+        body: formData
+    });
+
+    if (res.ok) {
+        alert("Uploaded successfully");
+        window.location.href = "/list";
+    } else {
+        alert("Upload failed");
+    }
+};
+</script>
+</body>
+</html>
