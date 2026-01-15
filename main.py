@@ -1,3 +1,7 @@
+from fastapi.templating import Jinja2Templates
+from fastapi.requests import Request
+from fastapi.responses import HTMLResponse
+
 from fastapi import UploadFile, File
 import os
 import shutil
