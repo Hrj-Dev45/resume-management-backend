@@ -21,6 +21,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 app = FastAPI(title="Resume Management API")
+templates = Jinja2Templates(directory="templates")
+
 
 # -----------------------
 # Security settings
