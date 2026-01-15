@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume List</title>
+</head>
+<body>
+<h2>Resumes</h2>
+<ul id="resumes"></ul>
+
+<script>
+async function loadResumes() {
+    const res = await fetch("/resumes", {
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    });
+    const data = await res.json();
+
+    const list = document.getElementById("resumes");
+    data.forEach(r => {
+        const li = document.createElement("li");
+        li.innerText = r.name + " - " + r.skills;
+        list.appendChild(li);
+    });
+}
+loadResumes();
+</script>
+</body>
+</html>
