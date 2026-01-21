@@ -2,22 +2,28 @@
 <html>
 <head>
     <title>Upload Resume</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<h2>Upload Resume</h2>
 
-<form id="uploadForm">
-    <input name="name" placeholder="Name"><br><br>
-    <input name="email" placeholder="Email"><br><br>
-    <input name="skills" placeholder="Skills"><br><br>
-    <input name="experience" type="number" placeholder="Experience"><br><br>
-    <input name="file" type="file"><br><br>
-    <button type="submit">Upload</button>
-</form>
+<div class="container">
+    <h2>Upload Resume</h2>
+
+    <form id="uploadForm">
+        <input name="name" placeholder="Name" required>
+        <input name="email" placeholder="Email" required>
+        <input name="skills" placeholder="Skills">
+        <input name="experience" type="number" placeholder="Experience">
+        <input name="file" type="file" required>
+
+        <button type="submit">Upload</button>
+    </form>
+</div>
 
 <script>
 document.getElementById("uploadForm").onsubmit = async (e) => {
     e.preventDefault();
+
     const formData = new FormData(e.target);
 
     const res = await fetch("/resumes/upload", {
@@ -29,12 +35,13 @@ document.getElementById("uploadForm").onsubmit = async (e) => {
     });
 
     if (res.ok) {
-        alert("Uploaded successfully");
+        alert("Resume uploaded successfully");
         window.location.href = "/list";
     } else {
         alert("Upload failed");
     }
 };
 </script>
+
 </body>
 </html>
