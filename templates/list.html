@@ -2,10 +2,14 @@
 <html>
 <head>
     <title>Resume List</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<h2>Resumes</h2>
-<ul id="resumes"></ul>
+
+<div class="container">
+    <h2>Resumes</h2>
+    <ul id="resumes"></ul>
+</div>
 
 <script>
 async function loadResumes() {
@@ -14,16 +18,26 @@ async function loadResumes() {
             "Authorization": "Bearer " + localStorage.getItem("token")
         }
     });
-    const data = await res.json();
 
+    if (!res.ok) {
+        alert("Unauthorized");
+        window.location.href = "/ui";
+        return;
+    }
+
+    const data = await res.json();
     const list = document.getElementById("resumes");
+
+    list.innerHTML = "";
     data.forEach(r => {
         const li = document.createElement("li");
-        li.innerText = r.name + " - " + r.skills;
+        li.innerText = r.name + " | " + r.skills + " | " + r.experience + " yrs";
         list.appendChild(li);
     });
 }
+
 loadResumes();
 </script>
+
 </body>
 </html>
