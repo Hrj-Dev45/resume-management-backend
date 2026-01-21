@@ -2,14 +2,18 @@
 <html>
 <head>
     <title>Login</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<h2>Login</h2>
 
-<input id="username" placeholder="Username"><br><br>
-<input id="password" type="password" placeholder="Password"><br><br>
+<div class="container">
+    <h2>Login</h2>
 
-<button onclick="login()">Login</button>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+</div>
 
 <script>
 async function login() {
@@ -22,10 +26,16 @@ async function login() {
         })
     });
 
+    if (!res.ok) {
+        alert("Invalid login");
+        return;
+    }
+
     const data = await res.json();
     localStorage.setItem("token", data.access_token);
     window.location.href = "/upload";
 }
 </script>
+
 </body>
 </html>
