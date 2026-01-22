@@ -12,15 +12,24 @@
 </div>
 
 <script>
+const token = localStorage.getItem("token");
+
+// 🚫 Block access if not logged in
+if (!token) {
+    alert("Please login first");
+    window.location.href = "/ui";
+}
+
 async function loadResumes() {
     const res = await fetch("/resumes", {
         headers: {
-            "Authorization": "Bearer " + localStorage.getItem("token")
+            "Authorization": "Bearer " + token
         }
     });
 
-    if (!res.ok) {
-        alert("Unauthorized");
+    if (res.status === 401) {
+        alert("Session expired. Please login again.");
+        localStorage.removeItem("token");
         window.location.href = "/ui";
         return;
     }
