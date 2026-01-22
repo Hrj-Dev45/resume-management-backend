@@ -1,3 +1,4 @@
+from fastapi.responses import FileResponse
 from fastapi import (
     FastAPI,
     Depends,
@@ -182,6 +183,25 @@ def get_resumes(user=Depends(get_current_user)):
     rows = conn.execute("SELECT * FROM resumes").fetchall()
     conn.close()
     return [dict(row) for row in rows]
+
+@app.get("/resumes/download/{resume_id}")
+def download_resume(resume_id: int, user=Depends(get_current_user)):
+    conn = get_db_connection()
+    row = conn.execute(
+        "SELECT file_path FROM resumes WHERE id=?",
+        (resume_id,)
+    ).fetchone()
+    conn.close()
+
+    if not row or not row["file_path"] or not os.path.exists(row["file_path"]):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(
+        path=row["file_path"],
+        filename=os.path.basename(row["file_path"]),
+        media_type="application/octet-stream"
+    )
+
 
 # -----------------------
 # Frontend Routes
