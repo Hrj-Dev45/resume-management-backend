@@ -39,10 +39,17 @@ async function loadResumes() {
 
     list.innerHTML = "";
     data.forEach(r => {
-        const li = document.createElement("li");
-        li.innerText = r.name + " | " + r.skills + " | " + r.experience + " yrs";
-        list.appendChild(li);
-    });
+    const li = document.createElement("li");
+    li.innerHTML = `
+        ${r.name} | ${r.skills} | ${r.experience} yrs
+        <br>
+        <a href="/resumes/download/${r.id}"
+           onclick="this.href += '?token=' + localStorage.getItem('token')">
+           Download
+        </a>
+    `;
+    list.appendChild(li);
+});
 }
 
 loadResumes();
