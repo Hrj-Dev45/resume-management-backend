@@ -1,36 +1,37 @@
-from fastapi.staticfiles import StaticFiles
-
+from fastapi import (
+    FastAPI,
+    Depends,
+    HTTPException,
+    UploadFile,
+    File,
+    Form
+)
+from fastapi.security import OAuth2PasswordBearer
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
-from fastapi.responses import HTMLResponse
-
-from fastapi import UploadFile, File
-import os
-import shutil
-
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from passlib.hash import argon2
 from jose import jwt, JWTError
 import sqlite3
-from datetime import datetime, timedelta
 import os
 import shutil
+from datetime import datetime, timedelta
+
+# -----------------------
+# App & Static Setup
+# -----------------------
+app = FastAPI(title="Resume Management API")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-
-app = FastAPI(title="Resume Management API")
-templates = Jinja2Templates(directory="templates")
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
-
 # -----------------------
-# Security settings
+# Security Config
 # -----------------------
 SECRET_KEY = "resume_secret_key"
 ALGORITHM = "HS256"
@@ -80,22 +81,14 @@ class User(BaseModel):
     username: str
     password: str
 
-class Resume(BaseModel):
-    name: str
-    email: str
-    skills: str
-    experience: int
-
 # -----------------------
-# Utility functions
+# Auth Helpers
 # -----------------------
 def hash_password(password: str):
     return argon2.hash(password)
 
-
 def verify_password(plain, hashed):
     return argon2.verify(plain, hashed)
-
 
 def create_access_token(data: dict):
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -110,12 +103,8 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Invalid token")
 
 # -----------------------
-# Public Routes
+# Auth APIs
 # -----------------------
-@app.get("/")
-def root():
-    return {"message": "Resume Management API is live"}
-
 @app.post("/signup")
 def signup(user: User):
     conn = get_db_connection()
@@ -137,7 +126,8 @@ def login(user: User):
     conn = get_db_connection()
     cursor = conn.cursor()
     db_user = cursor.execute(
-        "SELECT * FROM users WHERE username=?", (user.username,)
+        "SELECT * FROM users WHERE username=?",
+        (user.username,)
     ).fetchone()
     conn.close()
 
@@ -148,39 +138,24 @@ def login(user: User):
     return {"access_token": token, "token_type": "bearer"}
 
 # -----------------------
-# Protected Resume APIs
+# Resume APIs
 # -----------------------
-@app.post("/resumes")
-def add_resume(resume: Resume, user=Depends(get_current_user)):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO resumes (name, email, skills, experience) VALUES (?, ?, ?, ?)",
-        (resume.name, resume.email, resume.skills, resume.experience)
-    )
-    conn.commit()
-    conn.close()
-    return {"message": "Resume added"}
-
-@app.get("/resumes")
-def get_resumes(user=Depends(get_current_user)):
-    conn = get_db_connection()
-    rows = conn.execute("SELECT * FROM resumes").fetchall()
-    conn.close()
-    return [dict(row) for row in rows]
-
 @app.post("/resumes/upload")
 def upload_resume(
-    name: str,
-    email: str,
-    skills: str,
-    experience: int,
+    name: str = Form(...),
+    email: str = Form(...),
+    skills: str = Form(""),
+    experience: str = Form("0"),
     file: UploadFile = File(...),
     user=Depends(get_current_user)
 ):
-    # Validate file type
     if not file.filename.lower().endswith((".pdf", ".docx")):
         raise HTTPException(status_code=400, detail="Only PDF or DOCX allowed")
+
+    try:
+        experience_int = int(experience)
+    except ValueError:
+        experience_int = 0
 
     file_location = f"{UPLOAD_DIR}/{file.filename}"
 
@@ -194,16 +169,23 @@ def upload_resume(
         INSERT INTO resumes (name, email, skills, experience, file_path)
         VALUES (?, ?, ?, ?, ?)
         """,
-        (name, email, skills, experience, file_location)
+        (name, email, skills, experience_int, file_location)
     )
     conn.commit()
     conn.close()
 
-    return {
-        "message": "Resume uploaded successfully",
-        "file": file.filename
-    }
+    return {"message": "Resume uploaded successfully"}
 
+@app.get("/resumes")
+def get_resumes(user=Depends(get_current_user)):
+    conn = get_db_connection()
+    rows = conn.execute("SELECT * FROM resumes").fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+# -----------------------
+# Frontend Routes
+# -----------------------
 @app.get("/ui", response_class=HTMLResponse)
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
@@ -216,3 +198,6 @@ def upload_page(request: Request):
 def list_page(request: Request):
     return templates.TemplateResponse("list.html", {"request": request})
 
+@app.get("/")
+def root():
+    return {"message": "Resume Management API is live"}
