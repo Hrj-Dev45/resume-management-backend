@@ -33,7 +33,7 @@ async function login() {
 
     const data = await res.json();
     localStorage.setItem("token", data.access_token);
-    window.location.href = "/upload";
+    window.location.href = "/list";
 }
 </script>
 
